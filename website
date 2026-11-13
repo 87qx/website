@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cookie Clicker</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #fdf6e3;
+      color: #4a3520;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      user-select: none;
+    }
+    h1 { margin-bottom: 5px; }
+    .stats {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .sub-stats {
+      font-size: 1rem;
+      color: #8c6239;
+      margin-bottom: 25px;
+    }
+    #cookie {
+      font-size: 110px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.08s ease;
+      padding: 10px;
+    }
+    #cookie:active {
+      transform: scale(0.9);
+    }
+    .shop {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 25px;
+      width: 280px;
+    }
+    button.upgrade {
+      background-color: #d2691e;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button.upgrade:hover:not(:disabled) {
+      background-color: #a0522d;
+    }
+    button.upgrade:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    #reset-btn {
+      margin-top: 30px;
+      background: none;
+      border: 1px solid #8c6239;
+      color: #8c6239;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cookie Clicker</h1>
+  <div class="stats"><span id="cookies">0</span> Cookies</div>
+  <div class="sub-stats">
+    Per Click: <span id="cpc">1</span> | Per Second: <span id="cps">0</span>
+  </div>
+
+  <button id="cookie" aria-label="Click cookie">🍪</button>
+
+  <div class="shop">
+    <button class="upgrade" id="buy-click" onclick="buyClickUpgrade()">
+      Upgrade Click (+1) — Cost: <span id="click-cost">15</span>
+    </button>
+    <button class="upgrade" id="buy-auto" onclick="buyAutoClicker()">
+      Buy Grandma (+1/sec) — Cost: <span id="auto-cost">50</span>
+    </button>
+  </div>
+
+  <button id="reset-btn" onclick="resetGame()">Reset Progress</button>
+
+  <script>
+    // Load saved data or set defaults
+    let cookies = Number(localStorage.getItem('cookies')) || 0;
+    let clickPower = Number(localStorage.getItem('clickPower')) || 1;
+    let autoClickers = Number(localStorage.getItem('autoClickers')) || 0;
+    let clickCost = Number(localStorage.getItem('clickCost')) || 15;
+    let autoCost = Number(localStorage.getItem('autoCost')) || 50;
+
+    const cookiesEl = document.getElementById('cookies');
+    const cpcEl = document.getElementById('cpc');
+    const cpsEl = document.getElementById('cps');
+    const clickCostEl = document.getElementById('click-cost');
+    const autoCostEl = document.getElementById('auto-cost');
+    const buyClickBtn = document.getElementById('buy-click');
+    const buyAutoBtn = document.getElementById('buy-auto');
+
+    // Click the main cookie
+    document.getElementById('cookie').addEventListener('click', () => {
+      cookies += clickPower;
+      updateUI();
+    });
+
+    // Upgrade click power
+    function buyClickUpgrade() {
+      if (cookies >= clickCost) {
+        cookies -= clickCost;
+        clickPower += 1;
+        clickCost = Math.round(clickCost * 1.5);
+        updateUI();
+      }
+    }
+
+    // Buy passive auto-clicker
+    function buyAutoClicker() {
+      if (cookies >= autoCost) {
+        cookies -= autoCost;
+        autoClickers += 1;
+        autoCost = Math.round(autoCost * 1.6);
+        updateUI();
+      }
+    }
+
+    // Passive cookie generation loop (runs every second)
+    setInterval(() => {
+      if (autoClickers > 0) {
+        cookies += autoClickers;
+        updateUI();
+      }
+    }, 1000);
+
+    // Update display and save progress
+    function updateUI() {
+      cookiesEl.textContent = Math.floor(cookies);
+      cpcEl.textContent = clickPower;
+      cpsEl.textContent = autoClickers;
+      clickCostEl.textContent = clickCost;
+      autoCostEl.textContent = autoCost;
+
+      buyClickBtn.disabled = cookies < clickCost;
+      buyAutoBtn.disabled = cookies < autoCost;
+
+      localStorage.setItem('cookies', cookies);
+      localStorage.setItem('clickPower', clickPower);
+      localStorage.setItem('autoClickers', autoClickers);
+      localStorage.setItem('clickCost', clickCost);
+      localStorage.setItem('autoCost', autoCost);
+    }
+
+    function resetGame() {
+      localStorage.clear();
+      cookies = 0;
+      clickPower = 1;
+      autoClickers = 0;
+      clickCost = 15;
+      autoCost = 50;
+      updateUI();
+    }
+
+    // Initialize display on page load
+    updateUI();
+  </script>
+</body>
+</html>
